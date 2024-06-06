@@ -2,11 +2,8 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { DeleteIcon, Edit2Icon, TrashIcon } from "lucide-react";
 import React from "react";
 import DeleteColumnBtn from "./DeleteColumnBtn";
+import { Column } from "@/lib/store";
 
-type Column = {
-  name: string;
-  id: string;
-};
 interface ColumnContainerProps {
   column: Column;
 }
