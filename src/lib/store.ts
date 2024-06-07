@@ -1,3 +1,4 @@
+import { arrayMove } from "@dnd-kit/sortable";
 import exp from "constants";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -43,6 +44,12 @@ interface ColumnProps {
   columns: Column[];
   addColumn: (column: Column) => void;
   removeColumn: (id: string) => void;
+  setColumn: (column: Column[]) => void;
+  moveColumns: (
+    columns: Column[],
+    activeColumnIndex: number,
+    overColumnIndex: number
+  ) => void;
 }
 
 export const useColumnStore = create<ColumnProps>()(
@@ -55,6 +62,13 @@ export const useColumnStore = create<ColumnProps>()(
         set((state) => ({
           columns: state.columns.filter((column) => column.id !== id),
         })),
+      moveColumns: (columns, activeColumnIndex, overColumnIndex) =>
+        set({
+          columns: arrayMove(columns, activeColumnIndex, overColumnIndex),
+        }),
+      setColumn(column) {
+        set((state) => ({ columns: column }));
+      },
     }),
     {
       name: "columns",
