@@ -75,3 +75,39 @@ export const useColumnStore = create<ColumnProps>()(
     }
   )
 );
+
+/**
+ * Tasks
+ */
+
+export type Tasks = {
+  taskId: string;
+  columnId: string;
+  content: string;
+};
+
+interface TaskProps {
+  tasks: Tasks[];
+  addTask: (task: Tasks) => void;
+  removeTask: (taskId: string) => void;
+  setTask: (task: Tasks[]) => void;
+}
+
+export const useTasksStore = create<TaskProps>()(
+  persist(
+    (set) => ({
+      tasks: [],
+      addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
+      removeTask: (taskId) =>
+        set((state) => ({
+          tasks: state.tasks.filter((task) => task.taskId !== taskId),
+        })),
+      setTask(task) {
+        set((state) => ({ tasks: task }));
+      },
+    }),
+    {
+      name: "tasks",
+    }
+  )
+);

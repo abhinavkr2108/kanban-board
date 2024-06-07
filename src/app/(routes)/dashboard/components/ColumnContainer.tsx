@@ -1,22 +1,34 @@
 "use client";
-import { Card, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { DeleteIcon, Edit2Icon, TrashIcon } from "lucide-react";
 import React, { useState } from "react";
 import DeleteColumnBtn from "./DeleteColumnBtn";
-import { Column, useColumnStore } from "@/lib/store";
+import { Column, useColumnStore, useTasksStore } from "@/lib/store";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import AddTasksBtn from "./AddTasksBtn";
+import TaskItems from "./TaskItems";
 
 interface ColumnContainerProps {
   column: Column;
 }
 export default function ColumnContainer({ column }: ColumnContainerProps) {
   const [editMode, setEditMode] = useState<boolean>(false);
+
   // Columns Properties from Zustand Store
   const columns = useColumnStore((state) => state.columns);
   const setColumn = useColumnStore((state) => state.setColumn);
+
+  //Tasks Properties from Zustand Store
+  const tasks = useTasksStore((state) => state.tasks);
+
   const {
     attributes,
     listeners,
@@ -97,8 +109,17 @@ export default function ColumnContainer({ column }: ColumnContainerProps) {
           <DeleteColumnBtn column={column} />
         </div>
       </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-4">
+          {tasks
+            .filter((task) => task.columnId === column.id)
+            .map((task) => (
+              <TaskItems key={task.taskId} task={task} />
+            ))}
+        </div>
+      </CardContent>
       <CardFooter>
-        <Button className="w-full text-white font-bold">Add Tasks</Button>
+        <AddTasksBtn column={column} />
       </CardFooter>
     </Card>
   );
