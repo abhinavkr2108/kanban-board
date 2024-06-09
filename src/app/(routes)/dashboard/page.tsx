@@ -1,8 +1,8 @@
 import React from "react";
-import SectionHeader from "./components/SectionHeader";
-import KanbanBoard from "./components/KanbanBoard";
+import KanbanBoard from "./KanbanBoard";
+import SectionHeader from "./SectionHeader";
 
-export default function DashboardPage() {
+export default function TestPage() {
   return (
     <div className="h-screen w-screen flex flex-col">
       <SectionHeader />

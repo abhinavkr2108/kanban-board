@@ -78,81 +78,78 @@ export default function KanbanBoard() {
     const { destination, source, type } = result;
     if (!destination) return;
 
-    // dropping in same position
+    // Dropping in the same position
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     )
       return;
 
-    // moving column
     if (type === "column") {
+      // Moving column
       const newColumnOrder = reorder(columns, source.index, destination.index);
-      newColumnOrder.map((column, index) => ({ ...column, order: index }));
       setColumn(newColumnOrder);
     }
 
-    // moving task itemsif (type === "task") {
-    const newTasksData: Tasks[] = [...tasks];
-    const sourceTasks = newTasksData.filter(
-      (task) => task.columnId === source.droppableId
-    );
-    const destinationTasks = newTasksData.filter(
-      (task) => task.columnId === destination.droppableId
-    );
-
-    if (sourceTasks.length === 0 || destinationTasks.length === 0) return;
-
-    // Moving tasks within the same column
     if (type === "task") {
-      // Clone the tasks array to avoid direct mutation
+      // Moving tasks within or between columns
       let updatedTasks = [...tasks];
-
-      // Find the index of the source column in the tasks array
-      const sourceColumnIndex = updatedTasks.findIndex(
+      const sourceTasks = updatedTasks.filter(
         (task) => task.columnId === source.droppableId
       );
-      const destinationColumnIndex = updatedTasks.findIndex(
+      const destinationTasks = updatedTasks.filter(
         (task) => task.columnId === destination.droppableId
       );
 
-      // Only proceed if both source and destination are valid and refer to the same column
-      if (
-        sourceColumnIndex !== -1 &&
-        sourceColumnIndex === destinationColumnIndex
-      ) {
-        // Extract tasks from the source column
-        const columnTasks = updatedTasks.filter(
-          (task) => task.columnId === source.droppableId
-        );
+      // Ensure source and destination tasks are valid
+      if (sourceTasks.length === 0 && destinationTasks.length === 0) return;
 
-        // Reorder tasks within the column
+      if (source.droppableId === destination.droppableId) {
+        // Moving tasks within the same column
         const reorderedColumnTasks = reorder(
-          columnTasks,
+          sourceTasks,
           source.index,
           destination.index
         );
-
-        // Clear out the tasks from the source column in the updatedTasks array
-        updatedTasks = updatedTasks.filter(
-          (task) => task.columnId !== source.droppableId
-        );
-
-        // Merge reordered tasks back into the updatedTasks array
         reorderedColumnTasks.forEach((task, index) => {
-          task.order = index; // Update the order property for each task
-          updatedTasks.push(task); // Add the reordered task back into the array
+          task.order = index;
         });
 
-        // Remove duplicates that might have been added during the push operation
-        updatedTasks = updatedTasks.filter(
-          (task, index, self) =>
-            index === self.findIndex((t) => t.taskId === task.taskId)
-        );
+        updatedTasks = updatedTasks
+          .filter((task) => task.columnId !== source.droppableId)
+          .concat(reorderedColumnTasks);
+      } else {
+        // Moving tasks between columns
+        const [movedTask] = sourceTasks.splice(source.index, 1);
+        movedTask.columnId = destination.droppableId;
+        destinationTasks.splice(destination.index, 0, movedTask);
 
-        // Update the state with the fully updated tasks array
-        setTask(updatedTasks);
+        // Update the order of tasks in the source column
+        sourceTasks.forEach((task, index) => {
+          task.order = index;
+        });
+
+        // Update the order of tasks in the destination column
+        destinationTasks.forEach((task, index) => {
+          task.order = index;
+        });
+
+        // Create the new updatedTasks array
+        const newTasks = [
+          ...updatedTasks.filter(
+            (task) =>
+              task.columnId !== source.droppableId &&
+              task.columnId !== destination.droppableId
+          ),
+          ...sourceTasks,
+          ...destinationTasks,
+        ];
+
+        updatedTasks = newTasks;
       }
+
+      // Update the state with the fully updated tasks array
+      setTask(updatedTasks);
     }
   };
 
