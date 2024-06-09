@@ -82,6 +82,7 @@ export const useColumnStore = create<ColumnProps>()(
 
 export type Tasks = {
   taskId: string;
+  order: number;
   columnId: string;
   content: string;
 };

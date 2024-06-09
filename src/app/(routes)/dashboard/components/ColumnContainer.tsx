@@ -6,10 +6,14 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { DeleteIcon, Edit2Icon, TrashIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import DeleteColumnBtn from "./DeleteColumnBtn";
-import { Column, useColumnStore, useTasksStore } from "@/lib/store";
-import { useSortable } from "@dnd-kit/sortable";
+import { Column, Tasks, useColumnStore, useTasksStore } from "@/lib/store";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,8 +22,12 @@ import TaskItems from "./TaskItems";
 
 interface ColumnContainerProps {
   column: Column;
+  index: number;
 }
-export default function ColumnContainer({ column }: ColumnContainerProps) {
+export default function ColumnContainer({
+  column,
+  index,
+}: ColumnContainerProps) {
   const [editMode, setEditMode] = useState<boolean>(false);
 
   // Columns Properties from Zustand Store
@@ -29,6 +37,7 @@ export default function ColumnContainer({ column }: ColumnContainerProps) {
   //Tasks Properties from Zustand Store
   const tasks = useTasksStore((state) => state.tasks);
 
+  // Hooks from react-dnd
   const {
     attributes,
     listeners,
@@ -46,6 +55,11 @@ export default function ColumnContainer({ column }: ColumnContainerProps) {
     transition: transition,
     transform: CSS.Transform.toString(transform),
   };
+
+  // items for sortable context
+  const taskItems = useMemo(() => {
+    return tasks.map((task) => task.taskId);
+  }, [tasks]);
 
   if (isDragging) {
     return (
@@ -111,11 +125,13 @@ export default function ColumnContainer({ column }: ColumnContainerProps) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">
-          {tasks
-            .filter((task) => task.columnId === column.id)
-            .map((task) => (
-              <TaskItems key={task.taskId} task={task} />
-            ))}
+          <SortableContext items={taskItems}>
+            {tasks
+              .filter((task) => task.columnId === column.id)
+              .map((task) => (
+                <TaskItems key={task.taskId} task={task} />
+              ))}
+          </SortableContext>
         </div>
       </CardContent>
       <CardFooter>

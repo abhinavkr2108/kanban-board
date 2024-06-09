@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ListPlusIcon, PlusCircleIcon, PlusIcon } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
-import { useColumnStore } from "@/lib/store";
+import { Tasks, useColumnStore } from "@/lib/store";
 import {
   DndContext,
   DragEndEvent,
@@ -14,6 +14,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
+import { DragDropContext } from "react-beautiful-dnd";
 import { createPortal } from "react-dom";
 import {
   Dialog,
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import TaskItems from "./TaskItems";
 
 type Column = {
   name: string;
@@ -50,6 +52,7 @@ export default function KanbanBoard() {
 
   //State Variables
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+  const [activeTask, setActiveTask] = useState<Tasks | null>(null);
 
   const columnsId = useMemo(() => {
     return columns.map((column) => column.id);
@@ -71,6 +74,10 @@ export default function KanbanBoard() {
     console.log(e);
     if (e.active.data.current?.type === "column") {
       setActiveColumn(e.active.data.current?.column);
+      return;
+    }
+    if (e.active.data.current?.type === "task") {
+      setActiveTask(e.active.data.current?.task);
       return;
     }
   };
@@ -150,6 +157,7 @@ export default function KanbanBoard() {
       {createPortal(
         <DragOverlay>
           {activeColumn && <ColumnContainer column={activeColumn} />}
+          {activeTask && <TaskItems task={activeTask} />}
         </DragOverlay>,
         document.body
       )}
